@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # PPHA 34600: Program Evaluation
 
 Spring 2026
@@ -39,3 +40,4 @@ If this problem set is submitted late, your late token will automatically be use
 9. Finally, PEDAP wants you to use the pilot to estimate the impacts of grid electricity connection on firm revenues. For full transparency, make sure to show all of your analysis steps. PEDAP cares about your standard errors here, so be sure to get them right. Interpret your results: Does grid electricity connection matter for firm revenues? Word limit: 250 words.
 
 10. PEDAP like your analysis and are now intrigued by using the subsidy as a policy tool. But they're a bit worried about the quality of their data. While the firm revenue survey data were of extremely high quality, but the pilot research team did not keep great records of the subsidy amounts that were disbursed to firms. The development economist describes two possibilities and wants your opinion. First, she wants to know if it would be a problem for your analysis -- looking at the causal effect of the subsidy on firm revenues -- if the subsidy amount data included random noise? Why or why not? If yes, can you use an instrumental variables approach to address this problem? Second, she wants to know if it would be a problem for your analysis if larger subsidy amounts were recorded with error, but smaller subsidy amounts were accurately recorded. If yes, can you use an instrumental variables approach to address this problem? Word limit: 250 words.
+

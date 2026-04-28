@@ -1,0 +1,355 @@
+---
+title: "PPHA 34600 - Problem Set 1 Solutions"
+author: "Jocelyn Sánchez, Daniela Avayú, Luis E. Santos Burgoa"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output:
+  pdf_document:
+    fig_width: 7
+    fig_height: 4.5
+header-includes:
+  - \usepackage{amsmath}
+---
+
+```{r setup}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+data <- read.csv("ps1_data_spring26.csv")
+names(data) <- c(
+  "assigned_treatment",
+  "got_loan",
+  "livestock_before_treatment",
+  "household_size_before_treatment",
+  "agricultural_expenditure_before_treatment",
+  "credit_before_treatment",
+  "income_before_treatment",
+  "temporary_livestock_measure",
+  "livestock_after_treatment",
+  "household_size_after_treatment",
+  "agricultural_expenditure_after_treatment",
+  "credit_after_treatment",
+  "income_after_treatment"
+)
+```
+
+# Data Exploration
+
+```{r data-overview}
+cat("Number of rows:", nrow(data), "\n")
+cat("Number of columns:", ncol(data), "\n\n")
+
+names(data)
+```
+
+## Summary of the data
+
+```{r data-summary}
+summary(data)
+```
+
+# Question 1
+
+For household \(i\), let \(Y_i(1)\) be monthly household income if the household is given access to microcredit, and let \(Y_i(0)\) be monthly household income if the same household is not given access to microcredit. We can write the individual treatment effect is
+\[
+\tau_i = Y_i(1) - Y_i(0).
+\]
+
+In words, from the framework seen in class, we know \(\tau_i\) is the change in household \(i\)'s monthly income, measured in US dollars, that is caused by giving that household access to a microcredit. If \(\tau_i > 0\), then access to microcredit raises that household's income. If \(\tau_i < 0\), then access to microcredit lowers that household's income. If \(\tau_i = 0\), then access to microcredit has no effect on that household's income.
+
+# Question 2
+
+FARMS cannot estimate the household-specific treatment effect \(\tau_i\) because of the fundamental problem of causal inference seen in class. For any household, we can only observe one of the two potential outcomes. Either we see \(Y_i(1)\), the income the household has when it gets access to microcredit, or we see \(Y_i(0)\), the income the household has when it does not get access. We never observe both for the same household at the same time.
+
+Since, estimating \(\tau_i\) requires both potential outcomes for the same household. But we are always missing the counterfactual.
+
+But what we can do, is to estimate average effects for groups of households under the assumptions and a good model.
+
+# Question 3
+
+If we simply compares average income for households with microcredit to average income for households without microcredit, what we believe we are measuring is the observed difference in means:
+\[
+E[Y \mid D = 1] - E[Y \mid D = 0],
+\]
+where \(D=1\) means the household has access to microcredit, and \(D=0\) otherwise.
+
+This object is not the average treatment effect. This eventually would contain selection bias, as we do no know about the conditions of the survey and what assumptions were made in order to collect the data.
+
+We can think of households who seek out microcredit may already be more ambitious, or have different background, more skilled, or more connected to local markets than households who do not. This, by principle would make them not comparable with each other. 
+
+# Question 4
+
+The average treatment effect on the treated is given by:
+\[
+ATT = E[Y(1) - Y(0) \mid D = 1].
+\]
+
+In this setting, we can think of it as the average effect of access to microcredit for the households that actually have access to microcredit.
+
+From the statement we can say that the FARMS  data do not let us estimate the ATT by themselves. The reason is that among treated households, we observe \(Y(1)\), because we see their income after they have access to microcredit. But we do not observe \(Y(0)\) for those same treated households, meaning we do not know what their income would have been if they had not received access.
+
+So the missing piece is the untreated counterfactual:
+\[
+E[Y(0) \mid D = 1].
+\]
+
+# Question 5
+
+## Income before treatment histograms
+
+```{r q5-prepare}
+control <- subset(data, assigned_treatment == 0)
+treated <- subset(data, assigned_treatment == 1)
+
+balance_income <- t.test(income_before_treatment ~ assigned_treatment, data = data)
+balance_agexp <- t.test(agricultural_expenditure_before_treatment ~ assigned_treatment, data = data)
+balance_hhsize <- t.test(household_size_before_treatment ~ assigned_treatment, data = data)
+balance_livestock <- t.test(livestock_before_treatment ~ assigned_treatment, data = data)
+
+balance_table <- data.frame(
+  variable = c(
+    "Income before treatment",
+    "Agricultural expenditure before treatment",
+    "Household size before treatment",
+    "Livestock ownership before treatment"
+  ),
+  control_mean = c(
+    mean(control$income_before_treatment),
+    mean(control$agricultural_expenditure_before_treatment),
+    mean(control$household_size_before_treatment),
+    mean(control$livestock_before_treatment)
+  ),
+  treatment_mean = c(
+    mean(treated$income_before_treatment),
+    mean(treated$agricultural_expenditure_before_treatment),
+    mean(treated$household_size_before_treatment),
+    mean(treated$livestock_before_treatment)
+  ),
+  difference = c(
+    mean(treated$income_before_treatment) - mean(control$income_before_treatment),
+    mean(treated$agricultural_expenditure_before_treatment) - mean(control$agricultural_expenditure_before_treatment),
+    mean(treated$household_size_before_treatment) - mean(control$household_size_before_treatment),
+    mean(treated$livestock_before_treatment) - mean(control$livestock_before_treatment)
+  ),
+  p_value = c(
+    balance_income$p.value,
+    balance_agexp$p.value,
+    balance_hhsize$p.value,
+    balance_livestock$p.value
+  )
+)
+```
+
+```{r q5-histograms, fig.height=4}
+par(mfrow = c(1, 2))
+
+hist(
+  control$income_before_treatment,
+  breaks = 15,
+  main = "Control: Income",
+  xlab = "Income (USD)",
+  col = "gray80",
+  border = "white"
+)
+
+hist(
+  treated$income_before_treatment,
+  breaks = 15,
+  main = "Treatment: Income",
+  xlab = "Income (USD)",
+  col = "lightblue",
+  border = "white"
+)
+```
+
+
+```{r q5-balance-table}
+knitr::kable(balance_table, digits = 3)
+```
+
+The two income histograms before treatment look very similar. Both groups appear centered in about the same part of the distribution, and neither group looks obviously with a higher income than the other before treatment.
+
+In the provided tables, we can see the differences are small for income before treatment, agricultural expenditure before treatment, household size, and livestock ownership. The p-values are `r round(balance_income$p.value, 3)`, `r round(balance_agexp$p.value, 3)`, `r round(balance_hhsize$p.value, 3)`, and `r round(balance_livestock$p.value, 3)`, respectively. None of them is statistically significant at conventional levels.
+
+So we can say from this quick test that we do not find evidence that the treatment and control groups are different on these characteristics.
+
+Now, to estimate the causal effect of `assigned_treatment`, we need to assume that after random assignment, the two groups should differ only because one group was offered treatment.
+
+# Question 6
+
+## Post-treatment income histograms
+
+```{r q6-prepare}
+control <- subset(data, assigned_treatment == 0)
+treated <- subset(data, assigned_treatment == 1)
+
+control_after_treatment_income <- mean(control$income_after_treatment)
+treated_after_treatment_income <- mean(treated$income_after_treatment)
+income_difference <- treated_after_treatment_income - control_after_treatment_income
+relative_effect <- income_difference / control_after_treatment_income
+
+ate_model <- lm(income_after_treatment ~ assigned_treatment, data = data)
+ate_results <- round(coef(summary(ate_model)), 3)
+```
+
+```{r q6-histograms, fig.height=4}
+par(mfrow = c(1, 2))
+
+hist(
+  control$income_after_treatment,
+  breaks = 15,
+  main = "Control: Income",
+  xlab = "Income (USD)",
+  col = "gray80",
+  border = "white"
+)
+abline(v = mean(control$income_after_treatment), col = "red", lwd = 2)
+
+hist(
+  treated$income_after_treatment,
+  breaks = 15,
+  main = "Treatment: Income",
+  xlab = "Income (USD)",
+  col = "lightblue",
+  border = "white"
+)
+abline(v = mean(treated$income_after_treatment), col = "red", lwd = 2)
+```
+
+## Difference in means and regression
+
+```{r q6-results}
+after_treatment_summary <- data.frame(
+  group = c("Control", "Treatment"),
+  mean_income = c(control_after_treatment_income, treated_after_treatment_income)
+)
+
+knitr::kable(after_treatment_summary, digits = 3)
+knitr::kable(ate_results)
+```
+
+We can observed from the data that treatment group has much higher income after treatment than the control group. The average income is `r round(treated_after_treatment_income, 2)` USD in the treatment group and `r round(control_after_treatment_income, 2)` USD in the control group, so the simple difference in means is `r round(income_difference, 2)` USD.
+
+From the model, we can say that being assigned to treatment raises monthly household income after treatment by about `r round(income_difference, 2)` USD on average.
+
+Per our p-value, we may say the estimate is statistically significant, as is far below 0.001.
+
+# Question 7
+
+## Regression controlling for agricultural inputs after treatment
+
+Now, the first model we estimate is:
+\[
+\text{income\_after\_treatment}_i = \alpha + \beta \cdot \text{assigned\_treatment}_i + \gamma \cdot \text{agricultural\_expenditure\_after\_treatment}_i + \varepsilon_i
+\]
+
+
+```{r q7-prepare}
+after_treatment_control_model <- lm(
+  income_after_treatment ~ assigned_treatment + agricultural_expenditure_after_treatment,
+  data = data
+)
+after_treatment_control_results <- round(coef(summary(after_treatment_control_model)), 3)
+
+before_treatment_control_model <- lm(
+  income_after_treatment ~ assigned_treatment + agricultural_expenditure_before_treatment,
+  data = data
+)
+before_treatment_control_results <- round(coef(summary(before_treatment_control_model)), 3)
+```
+
+```{r q7-endline-control}
+knitr::kable(after_treatment_control_results)
+```
+
+## Regression controlling for agricultural expenditure before treatment
+
+The second model we estimate is:
+\[
+\text{income\_after\_treatment}_i = \alpha + \beta \cdot \text{assigned\_treatment}_i + \gamma \cdot \text{agricultural\_expenditure\_before\_treatment}_i + \varepsilon_i
+\]
+
+```{r q7-baseline-control}
+knitr::kable(before_treatment_control_results)
+```
+
+What we see for controlling for agricultural inputs after treatment, probably, a "bad control". Intuitively, we can think that a household with a microcredit would likely affects agriculture expenditure and income. 
+
+In question 6, the treatment estimate was about `r round(coef(ate_model)["assigned_treatment"], 2)` USD. After controlling for agricultural expenditure after treatment, the treatment coefficient falls to `r round(coef(after_treatment_control_model)["assigned_treatment"], 2)` USD and is no longer statistically significant. The change we made on the model eliminates the effect we want to observe.
+
+By contrast, controlling for agricultural inputs before treatment is acceptable because it was measured before treatment. In that regression, the treatment estimate is `r round(coef(before_treatment_control_model)["assigned_treatment"], 2)` USD, which we can see is almost identical to question 6. 
+
+# Question 8
+
+```{r q8-prepare}
+treated_assigned <- sum(data$assigned_treatment == 1)
+treated_received <- sum(data$assigned_treatment == 1 & data$got_loan == 1)
+control_received <- sum(data$assigned_treatment == 0 & data$got_loan == 1)
+
+q8_results <- data.frame(
+  result = c(
+    "Households assigned to treatment",
+    "Households assigned to treatment and got loan",
+    "Control households that got loan"
+  ),
+  value = c(
+    treated_assigned,
+    treated_received,
+    control_received
+  )
+)
+```
+
+```{r q8-results}
+knitr::kable(q8_results)
+```
+
+In question 6, we did not estimate the effect of actually receiving and using a loan. We estimated the effect of being assigned to treatment. This is the intention-to-treat effect, or ITT, we seen in class. We can say that because it is the effect of being assigned to the grooup with access to microcredit, regardless of whether the household actually took up the loan.
+
+This differs from the average treatment effect of the loan itself when there is noncompliance. The only case where the ITT and the treatment effect of the loan itself would be the same is full compliance. Here, some households assigned to treatment did not actually receive and use the loan.
+
+# Question 9
+
+```{r q9-prepare}
+control <- subset(data, assigned_treatment == 0)
+treated <- subset(data, assigned_treatment == 1)
+
+ate_model <- lm(income_after_treatment ~ assigned_treatment, data = data)
+itt <- coef(ate_model)["assigned_treatment"]
+compliance_rate <- mean(treated$got_loan) - mean(control$got_loan)
+late <- itt / compliance_rate
+
+q9_results <- data.frame(
+  result = c(
+    "Intention-to-treat effect",
+    "First stage",
+    "Local average treatment effect"
+  ),
+  value = c(
+    itt,
+    compliance_rate,
+    late
+  )
+)
+```
+
+```{r q9-results}
+knitr::kable(q9_results, digits = 3)
+```
+
+Using the LATE estimand from class, `assigned_treatment` as an instrument for `got_loan`, we can estimate:
+\[
+\frac{E[Y \mid R_i = 1] - E[Y \mid R_i = 0]}{E[D \mid R_i = 1] - E[D \mid R_i = 0]},
+\]
+where \(R_i\) is assigned treatment (`assigned_treatment`) and \(D\) is actual loan receipt (`got_loan`).
+
+
+In the data, the ITT is `r round(itt, 2)` USD and the first stage is `r round(compliance_rate, 3)`. So the estimated LATE is `r round(late, 2)` USD. This means that for compliers, actually getting the loan raises monthly household income by about `r round(late, 2)` USD on average.
+
+This estimate is larger than question 6 because question 6 averaged in households assigned to treatment who never actually took the loan.
+
+# Question 10
+
+Yes, this changes the interpretation of the estimate in question 6. If treated households affect nearby control households, then we have spillovers. In this setting, spillovers mean that one household's income can change not only because of its own treatment status, but also because nearby households were treated. This violates part of SUTVA.
+
+Once spillovers are present, the control group is no longer a good comparison group. Some control households may still benefit indirectly from the program through local market activity, or more wage labor, or information sharing, or other neighborhood effects. 
+
+Because of spillovers, the estimate in question 6 is not a clean comparison between treated and untreated households. Some control households may also be affected indirectly, so the estimated effect underestimated than the true direct effect of treatment.
