@@ -8,3 +8,13 @@ wheels/
 
 # Virtual environments
 .venv
+.python-version
+
+# macOS
+.DS_Store
+
+# R / RStudio local files
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
