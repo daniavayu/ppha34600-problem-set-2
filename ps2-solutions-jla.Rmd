@@ -1,5 +1,5 @@
 ---
-title: "PPHA 34600 - Problem Set 1 Solutions"
+title: "PPHA 34600 - Problem Set 2 Solutions"
 author: "Jocelyn Sánchez, Daniela Avayú, Luis E. Santos Burgoa"
 date: "`r format(Sys.Date(), '%B %d, %Y')`"
 output:
@@ -13,38 +13,85 @@ header-includes:
 ```{r setup}
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 
-data <- read.csv("ps1_data_spring26.csv")
+data <- read.csv("data/ps2_data_spring26.csv")
 names(data) <- c(
-  "assigned_treatment",
-  "got_loan",
-  "livestock_before_treatment",
-  "household_size_before_treatment",
-  "agricultural_expenditure_before_treatment",
-  "credit_before_treatment",
-  "income_before_treatment",
-  "temporary_livestock_measure",
-  "livestock_after_treatment",
-  "household_size_after_treatment",
-  "agricultural_expenditure_after_treatment",
-  "credit_after_treatment",
-  "income_after_treatment"
+  "owner_older40",
+  "owner_male",
+  "num_livestock",
+  "years_edu",
+  "num_employees",
+  "grid_subsidy_amount",
+  "grid_connection",
+  "firm_revenue"
 )
 ```
+# Question 1
 
-# Data Exploration
+PEDAP are interested in answering the following question: What is the average effect of grid electricity connection on firm annual revenues (measured in USD)? To make sure everybody is on the same page, explain to them what the ideal experiment would be for answering this question. Next, use math (the potential outcomes framework) and words to explain what you would estimate and how you would do so. Make sure to be clear about
+the unit of analysis (i.e., what is “i” here?). Word limit: 250 words
+
+The ideal experiment is a randomized controlled trial (RCT). We would randomly assign grid electricity connections to firms, with some receiving connections (treatment group) and others remaining unconnected (control group). Randomization ensures that any differences between groups are causal, not due to pre-existing differences. We would then measure annual firm revenue for both groups and compare the difference.
+
+# Computing ATE
 
 ```{r data-overview}
-cat("Number of rows:", nrow(data), "\n")
-cat("Number of columns:", ncol(data), "\n\n")
-
-names(data)
+ate_simple <- mean(data$firm_revenue[data$grid_connection == 1]) - 
+              mean(data$firm_revenue[data$grid_connection == 0])
+ate_simple
 ```
 
-## Summary of the data
+# Question 2
 
-```{r data-summary}
-summary(data)
+PEDAP has some data available, and they believe they can compare firms that are connected to the grid, to those who aren’t. They make a dataset available to you, in theform of ps3_data_Spring26.csv. Explain what you would recover if you simply compared connected to non-connected firms.
+
+Produce a balance table which displays the differences
+on observable characteristics between firms that are connected to the grid versus those that are not connected. Interpret this table. Does this table give you more or less faith in the comparison PEDAP would like to make? Word limit: 250 words.
+
+```{r}
+# Balance Table
+
+characteristics <- c("owner_older40", "owner_male", "num_livestock", "years_edu", "num_employees", "grid_subsidy_amount")
+
+balance_table <- data.frame()
+
+for (var in characteristics) {
+  # Means
+  mean_connected <- mean(data[[var]][data$grid_connection == 1], na.rm = TRUE)
+  mean_unconnected <- mean(data[[var]][data$grid_connection == 0], na.rm = TRUE)
+  difference <- mean_connected - mean_unconnected
+  
+  # T-test
+  t_test <- t.test(data[[var]][data$grid_connection == 1], 
+                   data[[var]][data$grid_connection == 0])
+  p_value <- t_test$p.value
+  
+  # Significance stars
+  sig <- ifelse(p_value < 0.01, "***", 
+                ifelse(p_value < 0.05, "**", 
+                       ifelse(p_value < 0.10, "*", "")))
+  
+  balance_table <- rbind(balance_table, data.frame(
+    Variable = var,
+    Connected = round(mean_connected, 4),
+    Not_Connected = round(mean_unconnected, 4),
+    Difference = round(difference, 4),
+    P_value = round(p_value, 4),
+    Significant = sig
+  ))
+}
+
 ```
+
+
+
+
+##Hasta aquí
+
+
+
+
+
+
 
 # Question 1
 
