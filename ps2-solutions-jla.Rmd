@@ -82,10 +82,12 @@ for (var in characteristics) {
 
 ```
 
+balance_table
 
 
+The balance table shows that firms with grid connections differ systematically from those without, indicating that treatment is not randomly assigned. Connected firms are much more likely to have older owners, male owners, and more educated owners, and they also tend to receive higher subsidies and have slightly more employees; all of these differences are statistically significant, except for livestock ownership, which appears balanced across groups. This pattern suggests clear selection bias, meaning that firms receiving grid connections were already more advantaged along several dimensions before treatment. As a result, the simple average treatment effect estimate of 12,992 is likely biased upward and does not reflect a purely causal impact of grid access on revenue. To obtain a more credible estimate, it is necessary to control for these pre-existing differences using a regression framework that adjusts for observable characteristics.
 
-##Hasta aquí
+
 
 
 
