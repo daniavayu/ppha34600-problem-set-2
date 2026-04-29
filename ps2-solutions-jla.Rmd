@@ -25,27 +25,26 @@ names(data) <- c(
   "firm_revenue"
 )
 ```
-# Question 1
 
-PEDAP are interested in answering the following question: What is the average effect of grid electricity connection on firm annual revenues (measured in USD)? To make sure everybody is on the same page, explain to them what the ideal experiment would be for answering this question. Next, use math (the potential outcomes framework) and words to explain what you would estimate and how you would do so. Make sure to be clear about
-the unit of analysis (i.e., what is “i” here?). Word limit: 250 words
+# Question 1:
+
+PEDAP are interested in answering the following question: What is the average effect of grid electricity connection on firm annual revenues (measured in USD)? To make sure everybody is on the same page, explain to them what the ideal experiment would be for answering this question. Next, use math (the potential outcomes framework) and words to explain what you would estimate and how you would do so. Make sure to be clear about the unit of analysis (i.e., what is “i” here?). Word limit: 250 words
 
 The ideal experiment is a randomized controlled trial (RCT). We would randomly assign grid electricity connections to firms, with some receiving connections (treatment group) and others remaining unconnected (control group). Randomization ensures that any differences between groups are causal, not due to pre-existing differences. We would then measure annual firm revenue for both groups and compare the difference.
 
 # Computing ATE
 
-```{r data-overview}
+```{r}
 ate_simple <- mean(data$firm_revenue[data$grid_connection == 1]) - 
               mean(data$firm_revenue[data$grid_connection == 0])
 ate_simple
 ```
 
-# Question 2
+# Question 2:
 
 PEDAP has some data available, and they believe they can compare firms that are connected to the grid, to those who aren’t. They make a dataset available to you, in theform of ps3_data_Spring26.csv. Explain what you would recover if you simply compared connected to non-connected firms.
 
-Produce a balance table which displays the differences
-on observable characteristics between firms that are connected to the grid versus those that are not connected. Interpret this table. Does this table give you more or less faith in the comparison PEDAP would like to make? Word limit: 250 words.
+Produce a balance table which displays the differences on observable characteristics between firms that are connected to the grid versus those that are not connected. Interpret this table. Does this table give you more or less faith in the comparison PEDAP would like to make? Word limit: 250 words.
 
 ```{r}
 # Balance Table
@@ -84,321 +83,95 @@ for (var in characteristics) {
 
 balance_table
 
-
 The balance table shows that firms with grid connections differ systematically from those without, indicating that treatment is not randomly assigned. Connected firms are much more likely to have older owners, male owners, and more educated owners, and they also tend to receive higher subsidies and have slightly more employees; all of these differences are statistically significant, except for livestock ownership, which appears balanced across groups. This pattern suggests clear selection bias, meaning that firms receiving grid connections were already more advantaged along several dimensions before treatment. As a result, the simple average treatment effect estimate of 12,992 is likely biased upward and does not reflect a purely causal impact of grid access on revenue. To obtain a more credible estimate, it is necessary to control for these pre-existing differences using a regression framework that adjusts for observable characteristics.
 
+# Question 3:
 
+(Optional, ungraded question) PEDAP acknowledges that a simple comparison may not work, but they still want an estimate of the impacts of being connected to the grid. PEDAP’s CEO recently took a class on impact evaluation and learned about selection-on-observables designs. They have asked you to apply this methodology. Use a regression-based approach to estimate the effect of the grid-connection on firm revenue. Interpret your results. What are the strengths and weaknesses of this approach? How do your results differ from what you find if you instead use the naive estimator? Word limit: 250 words.
 
-
-
-
-
-
-
-# Question 1
-
-For household \(i\), let \(Y_i(1)\) be monthly household income if the household is given access to microcredit, and let \(Y_i(0)\) be monthly household income if the same household is not given access to microcredit. We can write the individual treatment effect is
-\[
-\tau_i = Y_i(1) - Y_i(0).
-\]
-
-In words, from the framework seen in class, we know \(\tau_i\) is the change in household \(i\)'s monthly income, measured in US dollars, that is caused by giving that household access to a microcredit. If \(\tau_i > 0\), then access to microcredit raises that household's income. If \(\tau_i < 0\), then access to microcredit lowers that household's income. If \(\tau_i = 0\), then access to microcredit has no effect on that household's income.
-
-# Question 2
-
-FARMS cannot estimate the household-specific treatment effect \(\tau_i\) because of the fundamental problem of causal inference seen in class. For any household, we can only observe one of the two potential outcomes. Either we see \(Y_i(1)\), the income the household has when it gets access to microcredit, or we see \(Y_i(0)\), the income the household has when it does not get access. We never observe both for the same household at the same time.
-
-Since, estimating \(\tau_i\) requires both potential outcomes for the same household. But we are always missing the counterfactual.
-
-But what we can do, is to estimate average effects for groups of households under the assumptions and a good model.
-
-# Question 3
-
-If we simply compares average income for households with microcredit to average income for households without microcredit, what we believe we are measuring is the observed difference in means:
-\[
-E[Y \mid D = 1] - E[Y \mid D = 0],
-\]
-where \(D=1\) means the household has access to microcredit, and \(D=0\) otherwise.
-
-This object is not the average treatment effect. This eventually would contain selection bias, as we do no know about the conditions of the survey and what assumptions were made in order to collect the data.
-
-We can think of households who seek out microcredit may already be more ambitious, or have different background, more skilled, or more connected to local markets than households who do not. This, by principle would make them not comparable with each other. 
-
-# Question 4
-
-The average treatment effect on the treated is given by:
-\[
-ATT = E[Y(1) - Y(0) \mid D = 1].
-\]
-
-In this setting, we can think of it as the average effect of access to microcredit for the households that actually have access to microcredit.
-
-From the statement we can say that the FARMS  data do not let us estimate the ATT by themselves. The reason is that among treated households, we observe \(Y(1)\), because we see their income after they have access to microcredit. But we do not observe \(Y(0)\) for those same treated households, meaning we do not know what their income would have been if they had not received access.
-
-So the missing piece is the untreated counterfactual:
-\[
-E[Y(0) \mid D = 1].
-\]
-
-# Question 5
-
-## Income before treatment histograms
-
-```{r q5-prepare}
-control <- subset(data, assigned_treatment == 0)
-treated <- subset(data, assigned_treatment == 1)
-
-balance_income <- t.test(income_before_treatment ~ assigned_treatment, data = data)
-balance_agexp <- t.test(agricultural_expenditure_before_treatment ~ assigned_treatment, data = data)
-balance_hhsize <- t.test(household_size_before_treatment ~ assigned_treatment, data = data)
-balance_livestock <- t.test(livestock_before_treatment ~ assigned_treatment, data = data)
-
-balance_table <- data.frame(
-  variable = c(
-    "Income before treatment",
-    "Agricultural expenditure before treatment",
-    "Household size before treatment",
-    "Livestock ownership before treatment"
-  ),
-  control_mean = c(
-    mean(control$income_before_treatment),
-    mean(control$agricultural_expenditure_before_treatment),
-    mean(control$household_size_before_treatment),
-    mean(control$livestock_before_treatment)
-  ),
-  treatment_mean = c(
-    mean(treated$income_before_treatment),
-    mean(treated$agricultural_expenditure_before_treatment),
-    mean(treated$household_size_before_treatment),
-    mean(treated$livestock_before_treatment)
-  ),
-  difference = c(
-    mean(treated$income_before_treatment) - mean(control$income_before_treatment),
-    mean(treated$agricultural_expenditure_before_treatment) - mean(control$agricultural_expenditure_before_treatment),
-    mean(treated$household_size_before_treatment) - mean(control$household_size_before_treatment),
-    mean(treated$livestock_before_treatment) - mean(control$livestock_before_treatment)
-  ),
-  p_value = c(
-    balance_income$p.value,
-    balance_agexp$p.value,
-    balance_hhsize$p.value,
-    balance_livestock$p.value
-  )
-)
-```
-
-```{r q5-histograms, fig.height=4}
-par(mfrow = c(1, 2))
-
-hist(
-  control$income_before_treatment,
-  breaks = 15,
-  main = "Control: Income",
-  xlab = "Income (USD)",
-  col = "gray80",
-  border = "white"
-)
-
-hist(
-  treated$income_before_treatment,
-  breaks = 15,
-  main = "Treatment: Income",
-  xlab = "Income (USD)",
-  col = "lightblue",
-  border = "white"
-)
-```
-
-
-```{r q5-balance-table}
-knitr::kable(balance_table, digits = 3)
-```
-
-The two income histograms before treatment look very similar. Both groups appear centered in about the same part of the distribution, and neither group looks obviously with a higher income than the other before treatment.
-
-In the provided tables, we can see the differences are small for income before treatment, agricultural expenditure before treatment, household size, and livestock ownership. The p-values are `r round(balance_income$p.value, 3)`, `r round(balance_agexp$p.value, 3)`, `r round(balance_hhsize$p.value, 3)`, and `r round(balance_livestock$p.value, 3)`, respectively. None of them is statistically significant at conventional levels.
-
-So we can say from this quick test that we do not find evidence that the treatment and control groups are different on these characteristics.
-
-Now, to estimate the causal effect of `assigned_treatment`, we need to assume that after random assignment, the two groups should differ only because one group was offered treatment.
-
-# Question 6
-
-## Post-treatment income histograms
-
-```{r q6-prepare}
-control <- subset(data, assigned_treatment == 0)
-treated <- subset(data, assigned_treatment == 1)
-
-control_after_treatment_income <- mean(control$income_after_treatment)
-treated_after_treatment_income <- mean(treated$income_after_treatment)
-income_difference <- treated_after_treatment_income - control_after_treatment_income
-relative_effect <- income_difference / control_after_treatment_income
-
-ate_model <- lm(income_after_treatment ~ assigned_treatment, data = data)
-ate_results <- round(coef(summary(ate_model)), 3)
-```
-
-```{r q6-histograms, fig.height=4}
-par(mfrow = c(1, 2))
-
-hist(
-  control$income_after_treatment,
-  breaks = 15,
-  main = "Control: Income",
-  xlab = "Income (USD)",
-  col = "gray80",
-  border = "white"
-)
-abline(v = mean(control$income_after_treatment), col = "red", lwd = 2)
-
-hist(
-  treated$income_after_treatment,
-  breaks = 15,
-  main = "Treatment: Income",
-  xlab = "Income (USD)",
-  col = "lightblue",
-  border = "white"
-)
-abline(v = mean(treated$income_after_treatment), col = "red", lwd = 2)
-```
-
-## Difference in means and regression
-
-```{r q6-results}
-after_treatment_summary <- data.frame(
-  group = c("Control", "Treatment"),
-  mean_income = c(control_after_treatment_income, treated_after_treatment_income)
-)
-
-knitr::kable(after_treatment_summary, digits = 3)
-knitr::kable(ate_results)
-```
-
-We can observed from the data that treatment group has much higher income after treatment than the control group. The average income is `r round(treated_after_treatment_income, 2)` USD in the treatment group and `r round(control_after_treatment_income, 2)` USD in the control group, so the simple difference in means is `r round(income_difference, 2)` USD.
-
-From the model, we can say that being assigned to treatment raises monthly household income after treatment by about `r round(income_difference, 2)` USD on average.
-
-Per our p-value, we may say the estimate is statistically significant, as is far below 0.001.
-
-# Question 7
-
-## Regression controlling for agricultural inputs after treatment
-
-Now, the first model we estimate is:
-\[
-\text{income\_after\_treatment}_i = \alpha + \beta \cdot \text{assigned\_treatment}_i + \gamma \cdot \text{agricultural\_expenditure\_after\_treatment}_i + \varepsilon_i
-\]
-
-
-```{r q7-prepare}
-after_treatment_control_model <- lm(
-  income_after_treatment ~ assigned_treatment + agricultural_expenditure_after_treatment,
+```{r}
+# Regression-based Selection-on-Observables Estimate
+# Estimate treatment effect controlling for observable characteristics
+model_controls <- lm(
+  firm_revenue ~ grid_connection +
+    owner_older40 +
+    owner_male +
+    num_livestock +
+    years_edu +
+    num_employees +
+    grid_subsidy_amount,
   data = data
 )
-after_treatment_control_results <- round(coef(summary(after_treatment_control_model)), 3)
 
-before_treatment_control_model <- lm(
-  income_after_treatment ~ assigned_treatment + agricultural_expenditure_before_treatment,
-  data = data
+# Regression
+summary(model_controls)
+
+# Extract treatment effect estimate
+ate_adjusted <- coef(model_controls)["grid_connection"]
+ate_adjusted
+
+# Difference between naive and adjusted estimates
+difference <- ate_simple - ate_adjusted
+difference
+
+# Comparison table
+comparison <- data.frame(
+  Estimator = c("Naive Difference in Means", "Regression Adjusted"),
+  Estimate = c(ate_simple, ate_adjusted)
 )
-before_treatment_control_results <- round(coef(summary(before_treatment_control_model)), 3)
+
+print(comparison)
 ```
 
-```{r q7-endline-control}
-knitr::kable(after_treatment_control_results)
-```
 
-## Regression controlling for agricultural expenditure before treatment
+# Question 4:
 
-The second model we estimate is:
-\[
-\text{income\_after\_treatment}_i = \alpha + \beta \cdot \text{assigned\_treatment}_i + \gamma \cdot \text{agricultural\_expenditure\_before\_treatment}_i + \varepsilon_i
-\]
+Use an exact matching approach to estimate the effect of a grid connection on firm revenue. What variables did you decide to include in the matching procedure (remember you don’t have to use all the variables at your disposal)? Interpret your results. What are the strengths and weaknesses of this approach? How do your results differ from what you find if you use the naive estimator? Did you run into the Curse of Dimensionality with this analysis? If yes, describe how it affected your approach. If not, describe how the Curse could have generated problems in this setting. Word limit: 250 words.
 
-```{r q7-baseline-control}
-knitr::kable(before_treatment_control_results)
-```
+```{r}
+install.packages("MatchIt")
+library(MatchIt)
+library(dplyr)
 
-What we see for controlling for agricultural inputs after treatment, probably, a "bad control". Intuitively, we can think that a household with a microcredit would likely affects agriculture expenditure and income. 
+# Exact matching: covariates chosen for matching wil be education, gender and firm size
 
-In question 6, the treatment estimate was about `r round(coef(ate_model)["assigned_treatment"], 2)` USD. After controlling for agricultural expenditure after treatment, the treatment coefficient falls to `r round(coef(after_treatment_control_model)["assigned_treatment"], 2)` USD and is no longer statistically significant. The change we made on the model eliminates the effect we want to observe.
-
-By contrast, controlling for agricultural inputs before treatment is acceptable because it was measured before treatment. In that regression, the treatment estimate is `r round(coef(before_treatment_control_model)["assigned_treatment"], 2)` USD, which we can see is almost identical to question 6. 
-
-# Question 8
-
-```{r q8-prepare}
-treated_assigned <- sum(data$assigned_treatment == 1)
-treated_received <- sum(data$assigned_treatment == 1 & data$got_loan == 1)
-control_received <- sum(data$assigned_treatment == 0 & data$got_loan == 1)
-
-q8_results <- data.frame(
-  result = c(
-    "Households assigned to treatment",
-    "Households assigned to treatment and got loan",
-    "Control households that got loan"
-  ),
-  value = c(
-    treated_assigned,
-    treated_received,
-    control_received
-  )
+m.out <- matchit(
+  grid_connection ~ years_edu + owner_male + num_employees,
+  data = data,
+  method = "exact"
 )
-```
 
-```{r q8-results}
-knitr::kable(q8_results)
-```
+# Extract matched dataset
+matched_data <- match.data(m.out)
 
-In question 6, we did not estimate the effect of actually receiving and using a loan. We estimated the effect of being assigned to treatment. This is the intention-to-treat effect, or ITT, we seen in class. We can say that because it is the effect of being assigned to the grooup with access to microcredit, regardless of whether the household actually took up the loan.
+# Weighted Matched ATE
+ate_weighted <- matched_data %>%
+  group_by(subclass) %>%
+  summarise(
+    diff = mean(firm_revenue[grid_connection == 1]) -
+           mean(firm_revenue[grid_connection == 0]),
+    n = n()
+  ) %>%
+  summarise(weighted_ate = weighted.mean(diff, n)) %>%
+  pull(weighted_ate)
 
-This differs from the average treatment effect of the loan itself when there is noncompliance. The only case where the ITT and the treatment effect of the loan itself would be the same is full compliance. Here, some households assigned to treatment did not actually receive and use the loan.
-
-# Question 9
-
-```{r q9-prepare}
-control <- subset(data, assigned_treatment == 0)
-treated <- subset(data, assigned_treatment == 1)
-
-ate_model <- lm(income_after_treatment ~ assigned_treatment, data = data)
-itt <- coef(ate_model)["assigned_treatment"]
-compliance_rate <- mean(treated$got_loan) - mean(control$got_loan)
-late <- itt / compliance_rate
-
-q9_results <- data.frame(
-  result = c(
-    "Intention-to-treat effect",
-    "First stage",
-    "Local average treatment effect"
-  ),
-  value = c(
-    itt,
-    compliance_rate,
-    late
-  )
+# Comparison
+results <- data.frame(
+  Method = c("Naive", "Weighted Matching"),
+  Estimate = c(ate_simple, ate_weighted)
 )
+
+print(results)
+
 ```
+We implemented an exact matching approach by matching firms with and without grid connection on a selected set of pre-treatment covariates (owner education, owner gender, firm size) as matching variables, since these are strongly related to both the likelihood of receiving a grid connection and firm revenue, while keeping the dimensionality manageable. 
 
-```{r q9-results}
-knitr::kable(q9_results, digits = 3)
-```
+The main strength of exact matching is that it creates highly comparable treatment and control groups, improving internal validity by eliminating bias from the selected covariates. However, its key weakness is data loss: many observations cannot be matched exactly when multiple covariates are used, reducing sample size and potentially affecting external validity. It also does not adjust for unobserved confounders.
 
-Using the LATE estimand from class, `assigned_treatment` as an instrument for `got_loan`, we can estimate:
-\[
-\frac{E[Y \mid R_i = 1] - E[Y \mid R_i = 0]}{E[D \mid R_i = 1] - E[D \mid R_i = 0]},
-\]
-where \(R_i\) is assigned treatment (`assigned_treatment`) and \(D\) is actual loan receipt (`got_loan`).
+Regarding the Curse of Dimensionality,if more covariates had been included, finding exact matches would become increasingly difficult, potentially leaving very few or no matched pairs.
 
+The resulting estimated effect of grid connection is positive but smaller than the naive estimator of 12,992, suggesting that part of the raw difference was driven by observable differences between firms rather than the treatment itself.
 
-In the data, the ITT is `r round(itt, 2)` USD and the first stage is `r round(compliance_rate, 3)`. So the estimated LATE is `r round(late, 2)` USD. This means that for compliers, actually getting the loan raises monthly household income by about `r round(late, 2)` USD on average.
+# Question 5:
 
-This estimate is larger than question 6 because question 6 averaged in households assigned to treatment who never actually took the loan.
-
-# Question 10
-
-Yes, this changes the interpretation of the estimate in question 6. If treated households affect nearby control households, then we have spillovers. In this setting, spillovers mean that one household's income can change not only because of its own treatment status, but also because nearby households were treated. This violates part of SUTVA.
-
-Once spillovers are present, the control group is no longer a good comparison group. Some control households may still benefit indirectly from the program through local market activity, or more wage labor, or information sharing, or other neighborhood effects. 
-
-Because of spillovers, the estimate in question 6 is not a clean comparison between treated and untreated households. Some control households may also be affected indirectly, so the estimated effect underestimated than the true direct effect of treatment.
+PEDAP has decided they are not interested in using a selection-on-observables approach after your discussions with them. Instead, they mention that they have also heard about a strategy called instrumental variables (IV) and are considering using land gradient as an instrument. They would like you to discuss the plausibility of this instrument and outline its limitations. They would also like you to propose an alternative instrumental variable that could be used to evaluate the effect of grid electricity connection on firm revenues. Why would your proposed instrument be a good one? Do you have any concerns about your ability to estimate the treatment effect using your instrument? If so, explain why; if not, explain why not. Word limit: 250 words.
