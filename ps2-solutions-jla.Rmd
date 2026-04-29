@@ -129,7 +129,6 @@ print(comparison)
 Use an exact matching approach to estimate the effect of a grid connection on firm revenue. What variables did you decide to include in the matching procedure (remember you don’t have to use all the variables at your disposal)? Interpret your results. What are the strengths and weaknesses of this approach? How do your results differ from what you find if you use the naive estimator? Did you run into the Curse of Dimensionality with this analysis? If yes, describe how it affected your approach. If not, describe how the Curse could have generated problems in this setting. Word limit: 250 words.
 
 ```{r}
-install.packages("MatchIt")
 library(MatchIt)
 library(dplyr)
 
@@ -175,3 +174,9 @@ The resulting estimated effect of grid connection is positive but smaller than t
 # Question 5:
 
 PEDAP has decided they are not interested in using a selection-on-observables approach after your discussions with them. Instead, they mention that they have also heard about a strategy called instrumental variables (IV) and are considering using land gradient as an instrument. They would like you to discuss the plausibility of this instrument and outline its limitations. They would also like you to propose an alternative instrumental variable that could be used to evaluate the effect of grid electricity connection on firm revenues. Why would your proposed instrument be a good one? Do you have any concerns about your ability to estimate the treatment effect using your instrument? If so, explain why; if not, explain why not. Word limit: 250 words.
+
+Using land gradient as an instrument for grid connection is plausible in this context because it is likely correlated with the cost of extending electricity infrastructure: steeper terrain makes grid expansion more difficult and expensive, reducing the probability that a firm is connected. This supports the relevance condition. However, its main limitation concerns the exclusion restriction: land gradient may directly affect firm revenue through channels unrelated to electricity access, such as transportation costs, agricultural productivity, or market access. If this is the case, the instrument would be invalid because it would not affect revenue only through grid connection.
+
+An alternative instrumental variable could be the eligibility for a government program that reduces or fully waives grid connection fees, where access to the subsidy is determined through a lottery-based selection within eligible areas. This instrument would be appropriate because it is strongly related to the likelihood of receiving a grid connection, as lowering the cost of connection directly increases the probability that firms adopt electricity access. At the same time, if assignment to the subsidy is random, it can plausibly satisfy the exclusion restriction, meaning it affects firm revenues only through its impact on grid connection rather than through other channels.
+
+However, there are some concerns with this approach. First, the exclusion restriction may still be threatened if the subsidy program affects firms through additional mechanisms, such as complementary investments, increased local government attention, or other development programs bundled with electrification efforts. Second, even if assignment is randomized, spillovers may occur if nearby firms also benefit from improved infrastructure or increased economic activity, which could bias estimates. 
