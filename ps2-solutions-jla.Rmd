@@ -30,7 +30,28 @@ names(data) <- c(
 
 **PEDAP are interested in answering the following question: What is the average effect of grid electricity connection on firm annual revenues (measured in USD)? To make sure everybody is on the same page, explain to them what the ideal experiment would be for answering this question. Next, use math (the potential outcomes framework) and words to explain what you would estimate and how you would do so. Make sure to be clear about the unit of analysis (i.e., what is “i” here?). Word limit: 250 words**
 
-The ideal experiment is a randomized controlled trial (RCT). We would randomly assign grid electricity connections to firms, with some receiving connections (treatment group) and others remaining unconnected (control group). Randomization ensures that any differences between groups are causal, not due to pre-existing differences. We would then measure annual firm revenue for both groups and compare the difference.
+The ideal experiment is a randomized controlled trial (RCT). We would randomly assign grid electricity connections to firms, with some connected to the grid (treatment group) and others remaining unconnected (control group). We would then measure annual firm revenue for both groups and compare the difference as follows:
+
+The unit of analysis refers to firm \(i\).
+
+Let \(Y_i(1)\) be the annual revenue of firm \(i\) if it is connected to the grid, and let \(Y_i(0)\) be the annual revenue of firm \(i\) if it is not connected. The treatment effect for firm \(i\) is:
+
+\[
+Y_i(1) - Y_i(0)
+\]
+
+The parameter we want is the average treatment effect (ATE):
+
+\[
+ATE = \mathbb{E}[Y_i(1) - Y_i(0)]
+\]
+
+We know we cannot observe both potential outcomes for the same firm at the same time. Let \(D_i = 1\) if the firm is connected and \(D_i = 0\) otherwise. If treatment is randomly assigned, then we can estimate the ATE by comparing average revenue across the two groups:
+
+\[
+\mathbb{E}[Y_i \mid D_i = 1] - \mathbb{E}[Y_i \mid D_i = 0]
+\]
+
 
 # Computing ATE
 
@@ -79,9 +100,13 @@ for (var in characteristics) {
 
 ```
 
-balance_table
 
-The balance table shows that firms with grid connections differ systematically from those without, indicating that treatment is not randomly assigned. Connected firms are much more likely to have older owners, male owners, and more educated owners, and they also tend to receive higher subsidies and have slightly more employees; all of these differences are statistically significant, except for livestock ownership, which appears balanced across groups. This pattern suggests clear selection bias, meaning that firms receiving grid connections were already more advantaged along several dimensions before treatment. As a result, the simple average treatment effect estimate of 12,992 is likely biased upward and does not reflect a purely causal impact of grid access on revenue. To obtain a more credible estimate, it is necessary to control for these pre-existing differences using a regression framework that adjusts for observable characteristics.
+If we simply compare firms that are connected to the grid to firms that are not connected, we recover the difference in average revenues between the two groups. We know this is a naive estimate, and it may not equal the true causal effect of grid connection. The reason is that connected and unconnected firms may already be different in ways that also affect revenue.
+
+The balance table shows several important differences across the two groups. Connected firms are more likely to have older owners, male owners, and owners with more years of education. They also have slightly more employees. The livestock variable looks similar across the two groups and is not statistically different.
+
+This gives us less confidence in the simple comparison PEDAP wants to make. Since the two groups are not well balanced on several observable characteristics, the revenue difference between them is likely also picking up both the effect of grid connection and these existing differences.
+
 
 # Question 3:
 
@@ -89,35 +114,25 @@ The balance table shows that firms with grid connections differ systematically f
 
 ```{r}
 # Regression-based Selection-on-Observables Estimate
-# Estimate treatment effect controlling for observable characteristics
 model_controls <- lm(
   firm_revenue ~ grid_connection +
     owner_older40 +
     owner_male +
     num_livestock +
     years_edu +
-    num_employees +
-    grid_subsidy_amount,
+    num_employees,
   data = data
 )
 
-# Regression
 summary(model_controls)
 
-# Extract treatment effect estimate
 ate_adjusted <- coef(model_controls)["grid_connection"]
 ate_adjusted
 
-# Difference between naive and adjusted estimates
-difference <- ate_simple - ate_adjusted
-difference
-
-# Comparison table
 comparison <- data.frame(
   Estimator = c("Naive Difference in Means", "Regression Adjusted"),
   Estimate = c(ate_simple, ate_adjusted)
 )
-
 print(comparison)
 ```
 
@@ -173,11 +188,12 @@ The resulting estimated effect of grid connection is positive but smaller than t
 
 **PEDAP has decided they are not interested in using a selection-on-observables approach after your discussions with them. Instead, they mention that they have also heard about a strategy called instrumental variables (IV) and are considering using land gradient as an instrument. They would like you to discuss the plausibility of this instrument and outline its limitations. They would also like you to propose an alternative instrumental variable that could be used to evaluate the effect of grid electricity connection on firm revenues. Why would your proposed instrument be a good one? Do you have any concerns about your ability to estimate the treatment effect using your instrument? If so, explain why; if not, explain why not. Word limit: 250 words.**
 
-Using land gradient as an instrument for grid connection is plausible in this context because it is likely correlated with the cost of extending electricity infrastructure: steeper terrain makes grid expansion more difficult and expensive, reducing the probability that a firm is connected. This supports the relevance condition. However, its main limitation concerns the exclusion restriction: land gradient may directly affect firm revenue through channels unrelated to electricity access, such as transportation costs, agricultural productivity, or market access. If this is the case, the instrument would be invalid because it would not affect revenue only through grid connection.
+Land gradient could be a relevant instrument if steeper land makes it harder or more expensive to extend the electricity grid. In that case, firms in steeper areas may be less likely to be connected, so the instrument could predict treatment.
 
-An alternative instrumental variable could be the eligibility for a government program that reduces or fully waives grid connection fees, where access to the subsidy is determined through a lottery-based selection within eligible areas. This instrument would be appropriate because it is strongly related to the likelihood of receiving a grid connection, as lowering the cost of connection directly increases the probability that firms adopt electricity access. At the same time, if assignment to the subsidy is random, it can plausibly satisfy the exclusion restriction, meaning it affects firm revenues only through its impact on grid connection rather than through other channels.
+The main problem is the exclusion restriction. A better instrument would be random assignment of a grid connection subsidy. If the subsidy is randomly assigned, it should be unrelated to other firm characteristics, so it is more likely to satisfy the independence condition. It should also be relevant, because a larger subsidy lowers the cost of connecting and should increase the probability that a firm connects to the grid.
 
-However, there are some concerns with this approach. First, the exclusion restriction may still be threatened if the subsidy program affects firms through additional mechanisms, such as complementary investments, increased local government attention, or other development programs bundled with electrification efforts. Second, even if assignment is randomized, spillovers may occur if nearby firms also benefit from improved infrastructure or increased economic activity, which could bias estimates. 
+The main concern is that this instrument identifies a local average treatment effect, not the effect for all firms. It tells us the effect for firms whose decision to connect changes because of the subsidy.
+
 
 # Question 6: 
 **PEDAP is convinced that this approach is the most feasible given their data limitations. After an internal discussion, they’ve come back to you with great news! It turns out that one of the many well-meaning development economists at the University of Chicago ran a small pilot program where they randomly offered a grid connection subsidy (covering hookup fees and initial wiring costs) to some firms as part of an attempt to publish a paper in the American Economic Review (it is still unpublished). With this new information, please explain how you would use the subsidy program to estimate the impact of actually connecting to the grid on firm revenues. Use both words and math. Word limit: 250 words.**
@@ -295,8 +311,13 @@ Under the assumptions of relevance, independence, and exclusion restriction, thi
 # Question 10:
 **PEDAP like your analysis and are now intrigued by using the subsidy as a policy tool. But they’re a bit worried about the quality of their data. While the firm revenue survey data were of extremely high quality, but the pilot research team did not keep great records of the subsidy amounts that were disbursed to firms. The development economist describes two possibilities and wants your opinion. First, she wants to know if it would be a problem for your analysis — looking at the causal effect of the subsidy on firm revenues — if the subsidy amount data included random noise? Why or why not? If yes, can you use an instrumental variables approach to address this problem? Second, she wants to know if it would be a problem for your analysis if larger subsidy amounts were recorded with error, but smaller subsidy amounts were accurately recorded. If yes, can you use an instrumental variables approach to address this problem? Word limit: 250 words.**
 
-If the subsidy amount is measured with random noise, this constitutes classical measurement error in the instrument. In this case, the instrument becomes weaker, since the observed subsidy is less correlated with the true subsidy. This weakens the first stage and increases the variance of the IV estimator. However, as long as the measurement error is independent of the outcome error term, the IV estimator remains unbiased, though less precise. An IV approach does not solve this issue unless a better-measured instrument is available.
+If the subsidy amount is measured with random noise, we know this is a classical measurement error problem. This eventually weakens the relationship between the recorded subsidy and the true subsidy, so the estimated effect of the subsidy on firm revenue will usually be biased. 
 
-The second case involves non-classical measurement error, where larger subsidies are measured with more error. In this case, the measurement error is correlated with the true subsidy amount, potentially violating the exclusion restriction. This can induce correlation between the instrument and the error term in the outcome equation, leading to biased IV estimates. In this setting, an IV approach would not solve the problem unless a valid alternative instrument—uncorrelated with both the measurement error and the outcome error—is available.
+An instrumental variables approach could help. Simply using the noisy subsidy variable itself in an IV framework would not solve the problem.
+
+The second case is more serious. If larger subsidy amounts are measured with more error, while smaller amounts are measured correctly, then the measurement error is not random. In that case, we can think of the error related to the true value of the subsidy, which can create bias in a less predictable way. The problem is harder to fix.
+
+Again, IV could help only if there is another valid instrument for the true subsidy amount that is not affected by this recording problem. Without a separate valid instrument, this type of non-random measurement error would be a serious problem for the analysis and obtaining true or useful results.
+
 
 
