@@ -28,7 +28,7 @@ names(data) <- c(
 
 # Question 1:
 
-PEDAP are interested in answering the following question: What is the average effect of grid electricity connection on firm annual revenues (measured in USD)? To make sure everybody is on the same page, explain to them what the ideal experiment would be for answering this question. Next, use math (the potential outcomes framework) and words to explain what you would estimate and how you would do so. Make sure to be clear about the unit of analysis (i.e., what is “i” here?). Word limit: 250 words
+**PEDAP are interested in answering the following question: What is the average effect of grid electricity connection on firm annual revenues (measured in USD)? To make sure everybody is on the same page, explain to them what the ideal experiment would be for answering this question. Next, use math (the potential outcomes framework) and words to explain what you would estimate and how you would do so. Make sure to be clear about the unit of analysis (i.e., what is “i” here?). Word limit: 250 words**
 
 The ideal experiment is a randomized controlled trial (RCT). We would randomly assign grid electricity connections to firms, with some receiving connections (treatment group) and others remaining unconnected (control group). Randomization ensures that any differences between groups are causal, not due to pre-existing differences. We would then measure annual firm revenue for both groups and compare the difference.
 
@@ -42,9 +42,7 @@ ate_simple
 
 # Question 2:
 
-PEDAP has some data available, and they believe they can compare firms that are connected to the grid, to those who aren’t. They make a dataset available to you, in theform of ps3_data_Spring26.csv. Explain what you would recover if you simply compared connected to non-connected firms.
-
-Produce a balance table which displays the differences on observable characteristics between firms that are connected to the grid versus those that are not connected. Interpret this table. Does this table give you more or less faith in the comparison PEDAP would like to make? Word limit: 250 words.
+**PEDAP has some data available, and they believe they can compare firms that are connected to the grid, to those who aren’t. They make a dataset available to you, in the form of ps3_data_Spring26.csv. Explain what you would recover if you simply compared connected to non-connected firms. Produce a balance table which displays the differences on observable characteristics between firms that are connected to the grid versus those that are not connected. Interpret this table. Does this table give you more or less faith in the comparison PEDAP would like to make? Word limit: 250 words.**
 
 ```{r}
 # Balance Table
@@ -87,7 +85,7 @@ The balance table shows that firms with grid connections differ systematically f
 
 # Question 3:
 
-(Optional, ungraded question) PEDAP acknowledges that a simple comparison may not work, but they still want an estimate of the impacts of being connected to the grid. PEDAP’s CEO recently took a class on impact evaluation and learned about selection-on-observables designs. They have asked you to apply this methodology. Use a regression-based approach to estimate the effect of the grid-connection on firm revenue. Interpret your results. What are the strengths and weaknesses of this approach? How do your results differ from what you find if you instead use the naive estimator? Word limit: 250 words.
+**(Optional, ungraded question) PEDAP acknowledges that a simple comparison may not work, but they still want an estimate of the impacts of being connected to the grid. PEDAP’s CEO recently took a class on impact evaluation and learned about selection-on-observables designs. They have asked you to apply this methodology. Use a regression-based approach to estimate the effect of the grid-connection on firm revenue. Interpret your results. What are the strengths and weaknesses of this approach? How do your results differ from what you find if you instead use the naive estimator? Word limit: 250 words.**
 
 ```{r}
 # Regression-based Selection-on-Observables Estimate
@@ -126,7 +124,7 @@ print(comparison)
 
 # Question 4:
 
-Use an exact matching approach to estimate the effect of a grid connection on firm revenue. What variables did you decide to include in the matching procedure (remember you don’t have to use all the variables at your disposal)? Interpret your results. What are the strengths and weaknesses of this approach? How do your results differ from what you find if you use the naive estimator? Did you run into the Curse of Dimensionality with this analysis? If yes, describe how it affected your approach. If not, describe how the Curse could have generated problems in this setting. Word limit: 250 words.
+**Use an exact matching approach to estimate the effect of a grid connection on firm revenue. What variables did you decide to include in the matching procedure (remember you don’t have to use all the variables at your disposal)? Interpret your results. What are the strengths and weaknesses of this approach? How do your results differ from what you find if you use the naive estimator? Did you run into the Curse of Dimensionality with this analysis? If yes, describe how it affected your approach. If not, describe how the Curse could have generated problems in this setting. Word limit: 250 words.**
 
 ```{r}
 library(MatchIt)
@@ -173,10 +171,132 @@ The resulting estimated effect of grid connection is positive but smaller than t
 
 # Question 5:
 
-PEDAP has decided they are not interested in using a selection-on-observables approach after your discussions with them. Instead, they mention that they have also heard about a strategy called instrumental variables (IV) and are considering using land gradient as an instrument. They would like you to discuss the plausibility of this instrument and outline its limitations. They would also like you to propose an alternative instrumental variable that could be used to evaluate the effect of grid electricity connection on firm revenues. Why would your proposed instrument be a good one? Do you have any concerns about your ability to estimate the treatment effect using your instrument? If so, explain why; if not, explain why not. Word limit: 250 words.
+**PEDAP has decided they are not interested in using a selection-on-observables approach after your discussions with them. Instead, they mention that they have also heard about a strategy called instrumental variables (IV) and are considering using land gradient as an instrument. They would like you to discuss the plausibility of this instrument and outline its limitations. They would also like you to propose an alternative instrumental variable that could be used to evaluate the effect of grid electricity connection on firm revenues. Why would your proposed instrument be a good one? Do you have any concerns about your ability to estimate the treatment effect using your instrument? If so, explain why; if not, explain why not. Word limit: 250 words.**
 
 Using land gradient as an instrument for grid connection is plausible in this context because it is likely correlated with the cost of extending electricity infrastructure: steeper terrain makes grid expansion more difficult and expensive, reducing the probability that a firm is connected. This supports the relevance condition. However, its main limitation concerns the exclusion restriction: land gradient may directly affect firm revenue through channels unrelated to electricity access, such as transportation costs, agricultural productivity, or market access. If this is the case, the instrument would be invalid because it would not affect revenue only through grid connection.
 
 An alternative instrumental variable could be the eligibility for a government program that reduces or fully waives grid connection fees, where access to the subsidy is determined through a lottery-based selection within eligible areas. This instrument would be appropriate because it is strongly related to the likelihood of receiving a grid connection, as lowering the cost of connection directly increases the probability that firms adopt electricity access. At the same time, if assignment to the subsidy is random, it can plausibly satisfy the exclusion restriction, meaning it affects firm revenues only through its impact on grid connection rather than through other channels.
 
 However, there are some concerns with this approach. First, the exclusion restriction may still be threatened if the subsidy program affects firms through additional mechanisms, such as complementary investments, increased local government attention, or other development programs bundled with electrification efforts. Second, even if assignment is randomized, spillovers may occur if nearby firms also benefit from improved infrastructure or increased economic activity, which could bias estimates. 
+
+# Question 6: 
+**PEDAP is convinced that this approach is the most feasible given their data limitations. After an internal discussion, they’ve come back to you with great news! It turns out that one of the many well-meaning development economists at the University of Chicago ran a small pilot program where they randomly offered a grid connection subsidy (covering hookup fees and initial wiring costs) to some firms as part of an attempt to publish a paper in the American Economic Review (it is still unpublished). With this new information, please explain how you would use the subsidy program to estimate the impact of actually connecting to the grid on firm revenues. Use both words and math. Word limit: 250 words.**
+
+Since the subsidy was randomly offered, I would use it as an instrument for actual grid connection. 
+
+We assume monotonicity, i.e., $D_i(1) \geq D_i(0)$, which rules out the presence of defiers. However, firms may still be always-takers or never-takers, meaning that not all firms offered the subsidy will necessarily connect to the grid.
+
+Let $Z_i$ denote the subsidy amount assigned to firm $i$, $D_i$ an indicator for whether firm $i$ connects to the grid, and $Y_i$ firm annual revenue. The parameter of interest is the causal effect of grid connection on revenue.
+
+Because $D_i$ is endogenous, we use the subsidy as an instrument. The estimation proceeds via two-stage least squares:
+
+First stage:
+\[
+D_i = \alpha_0 + \alpha_1 Z_i + u_i
+\]
+
+Second stage:
+\[
+Y_i = \beta_0 + \beta_1 \hat{D}_i + \varepsilon_i
+\]
+
+Here, $\beta_1$ identifies the Local Average Treatment Effect (LATE), which captures the effect of grid connection on firms whose decision to connect is influenced by the subsidy (compliers).
+
+This approach relies on two key assumptions: (i) relevance, the subsidy affects connection, and (iii) exclusion restriction, the subsidy affects revenues only through its impact on grid connection.
+
+# Question 7: 
+**PEDAP agree that your approach is a good one. So good, in fact, that they’d like to see it in action! They forgot to tell you that the dataset they provided you will allow you to apply this approach as well. Please report the results of a regression that recovers the impact of grid connection subsidies on the take-up of grid electricity by a firm, using grid_subsidy_amount as the subsidy variable (note that this pilot randomly gave different subsidy amounts to different firms— this is not just a binary variable) and grid_connection as an indicator for having successfully connected to the national electricity grid. What parameter does this estimate? Interpret your estimate. Word limit: 250 words.**
+
+To estimate the impact of the subsidy on grid connection, we run the First Stage Regression:
+
+\[
+D_i = \alpha + \gamma Z_i + u_i
+\]
+
+where $D_i$ is an indicator for whether firm $i$ connected to the grid and $Z_i$ is the subsidy amount offered.
+
+```{r}
+first_stage <- lm(grid_connection ~ grid_subsidy_amount, data = data)
+summary(first_stage)
+```
+
+
+The estimated coefficient on the subsidy is $\gamma = 0.001548$ (p < 0.001), indicating a positive and statistically significant relationship between the subsidy and grid connection. This implies that a one-unit increase in the subsidy amount increases the probability of connecting to the grid by approximately 0.1548 percentage points.
+
+This result provides strong evidence that the subsidy is a relevant instrument, as it significantly affects the take-up of grid electricity. The large F-statistic (170.5) further confirms that the instrument is strong and unlikely to suffer from weak instrument concerns.
+
+# Question 8:
+**PEDAP want you to use the pilot for the next steps of your analysis (they are ignoring any opinion you gave in (5), good or bad – welcome to the real world). They’d first like to learn a little bit more about the pilot itself: they want you to use a regression to estimate the effects of the grid connection subsidies (using grid_subsidy_amount) on firm annual revenues (firm_revenue). What parameter does this regression estimate? Interpret your estimate. Is it useful for policy? Why or why not? Word limit: 250 words.**
+
+To estimate the effect of the subsidy on firm revenues, we run the following regression:
+
+\[
+Y_i = \alpha + \rho Z_i + \varepsilon_i
+\]
+
+where $Y_i$ is firm annual revenue and $Z_i$ is the subsidy amount.
+
+```{r}
+reduced_form <- lm(firm_revenue ~ grid_subsidy_amount, data = data)
+
+summary(reduced_form)
+
+#Robust errors
+library(sandwich)
+library(lmtest)
+
+coeftest(reduced_form, vcov = vcovHC(reduced_form, type = "HC1"))
+
+```
+
+
+The estimated coefficient is $\rho = 11.50$ (p < 0.001), indicating a positive and statistically significant effect of the subsidy on firm revenues. This implies that a one-unit increase in the subsidy amount increases firm revenue by approximately 11.5 USD.
+
+This parameter corresponds to the reduced-form effect (or intention-to-treat effect), capturing the total impact of the subsidy on revenues. Because the subsidy was randomly assigned, this estimate has a causal interpretation.
+
+However, this estimate does not isolate the effect of actually connecting to the grid, since not all firms offered the subsidy choose to connect. Instead, it reflects both the effect of the subsidy on take-up and the effect of connection on revenues.
+
+This estimate is useful for policy, as it measures the impact of the subsidy program as implemented. However, it does not directly answer the structural question of how much grid connection increases firm revenues. For that, an instrumental variables approach is required.
+
+# Question 9:
+**Finally, PEDAP wants you to use the pilot to estimate the impacts of grid electricity connection on firm revenues. For full transparency, make sure to show all of your analysis steps. PEDAP cares about your standard errors here, so be sure to get them right. Interpret your results: Does grid electricity connection matter for firm revenues? Word limit: 250 words.**
+
+To estimate the causal effect of grid connection on firm revenues, we implement a two-stage least squares (2SLS) approach using the subsidy amount as an instrument.
+
+First stage:
+\[
+D_i = \alpha + \gamma Z_i + u_i
+\]
+
+Second stage:
+\[
+Y_i = \beta + \delta \hat{D}_i + \varepsilon_i
+\]
+
+where $D_i$ is an indicator for grid connection, $Z_i$ is the subsidy amount, and $Y_i$ is firm revenue.
+
+```{r}
+library(AER)
+
+iv_model <- ivreg(
+  firm_revenue ~ grid_connection | grid_subsidy_amount,
+  data = data
+)
+
+coeftest(iv_model, vcov = vcovHC(iv_model, type = "HC1"))
+```
+
+The estimated coefficient on grid connection is $\delta = 7431.26$ (p < 0.001), indicating that connecting to the grid increases firm revenues by approximately \$7,431 USD. This effect is statistically significant and economically large.
+
+This parameter identifies the Local Average Treatment Effect (LATE), capturing the causal effect of grid connection on firms whose decision to connect is influenced by the subsidy (compliers).
+
+Under the assumptions of relevance, independence, and exclusion restriction, this estimate has a causal interpretation. The results suggest that access to reliable electricity substantially improves firm performance, indicating that grid expansion policies could have meaningful economic benefits.
+
+# Question 10:
+**PEDAP like your analysis and are now intrigued by using the subsidy as a policy tool. But they’re a bit worried about the quality of their data. While the firm revenue survey data were of extremely high quality, but the pilot research team did not keep great records of the subsidy amounts that were disbursed to firms. The development economist describes two possibilities and wants your opinion. First, she wants to know if it would be a problem for your analysis — looking at the causal effect of the subsidy on firm revenues — if the subsidy amount data included random noise? Why or why not? If yes, can you use an instrumental variables approach to address this problem? Second, she wants to know if it would be a problem for your analysis if larger subsidy amounts were recorded with error, but smaller subsidy amounts were accurately recorded. If yes, can you use an instrumental variables approach to address this problem? Word limit: 250 words.**
+
+If the subsidy amount is measured with random noise, this constitutes classical measurement error in the instrument. In this case, the instrument becomes weaker, since the observed subsidy is less correlated with the true subsidy. This weakens the first stage and increases the variance of the IV estimator. However, as long as the measurement error is independent of the outcome error term, the IV estimator remains unbiased, though less precise. An IV approach does not solve this issue unless a better-measured instrument is available.
+
+The second case involves non-classical measurement error, where larger subsidies are measured with more error. In this case, the measurement error is correlated with the true subsidy amount, potentially violating the exclusion restriction. This can induce correlation between the instrument and the error term in the outcome equation, leading to biased IV estimates. In this setting, an IV approach would not solve the problem unless a valid alternative instrument—uncorrelated with both the measurement error and the outcome error—is available.
+
+
